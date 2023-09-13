@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <center><h1>Book Store App</h1></center>
+    </div>
+    <hr>
+    <div class="row" style=" align-items:center;justify-content: center;">
+        <div class="col"> <a href="showBookForm"><button class="btn btn-primary">Add New Book</button></a></div>
+        <select id="sortdown" style="float: right; width: 10%; position: absolute; right: 12%;" class="btn btn-primary">
+            <option value="default">Default</option>
+            <option value="name">Sort by Name</option>
+            <option value="price">Sort by Price</option>
+        </select>
+        <input class="form-control" id="search" placeholder="Search Here" onkeyup="search_book()" style="float: right; width: 10%; top: 90px; height: 32px; position: absolute; right: 25%;" type="search" name="search">
+       <div  style=" align-items:center; height:25px; width:39px; position: absolute; right: 23%; top: 95px;"><a onclick="search_book()"><i class="fa-solid fa-magnifying-glass"></i></a></div>
+    </div>
+    <hr>
+    <h1>Books info</h1>
+    <div class="container">
+        <div id="container" class="row">
+            <div class="col-4" th:each="book:${books}" style="padding-top: 30px;">
+                <div class="card">
+                    <div class="card-header">
+                        <h1 class="card-name" th:text="${book.bookName}"></h1>
+                    </div>
+                    <div class="card-body">
+                        <h3>Price: <span class="price" th:text="${book.bookPrice}"></span></h3>
+                        <h3>Category: <span th:text="${book.bookCategory}"></span></h3>
+                    </div>
+                    <div class="card-footer">
+                        <a th:href="@{/updateBookForm/{id}(id=${book.bookId})}">
+                            <button class="btn btn-primary">Update</button></a>
+
+                        <a th:href="@{/deleteBook/{id}(id=${book.bookId})}">
+                            <button class="btn btn-danger">Delete</button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Step 1: Identify the parent container element
+    var parentContainer = document.getElementById("container");
+
+    // Step 2: Retrieve child div elements
+    var divElements = parentContainer.children;
+
+    // Step 3: Convert NodeList to an array
+    var divArray = Array.prototype.slice.call(divElements);
+
+    const sortDropdown = document.getElementById("sortdown");
+    sortDropdown.addEventListener("change", sortDivs);
+
+    // Step 4: Sort the array of div elements
+    function sortDivs() {
+        const sortBy = sortDropdown.value;
+        if (sortBy === "name") {
+            divArray.sort(function (a, b) {
+                return a.innerText.localeCompare(b.innerText); // Sort based on the inner text
+            });
+        } else if (sortBy === "price") {
+            divArray.sort(function (a, b) {
+                aValue = parseFloat(a.querySelector(".price").textContent.slice(1));
+                bValue = parseFloat(b.querySelector(".price").textContent.slice(1));
+                return aValue - bValue;
+            });
+        } else if (sortBy === "default") {
+            divArray.sort(function (a, b) {
+                return a.getAttribute("data-index") - b.getAttribute("data-index");
+            });
+        }
+
+        // Step 5: Remove existing child div elements
+        while (parentContainer.firstChild) {
+            parentContainer.removeChild(parentContainer.firstChild);
+        }
+
+        // Step 6: Append sorted div elements back into the parent container
+        divArray.forEach(function (div) {
+            parentContainer.appendChild(div);
+        });
+    }
+
+    function search_book() {
+        var input = document.getElementById("search");
+        var filter = input.value.toUpperCase();
+        for (var i = 0; i < divArray.length; i++) {
+            var bookName = divArray[i].getElementsByClassName("card-name")[0].innerText;
+            if (bookName.toUpperCase().indexOf(filter) > -1) {
+                divArray[i].style.display = "";
+            } else {
+                divArray[i].style.display = "none";
+            }
+        }
+    }
+
+    // Assign data-index attribute to maintain original order
+    for (var i = 0; i < divArray.length; i++) {
+        divArray[i].setAttribute("data-index", i);
+    }
+</script>
+
+</body>
+</html>
